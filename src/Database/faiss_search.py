@@ -1,79 +1,61 @@
 """
 faiss_search.py
 ----------------
-This module handles the creation and querying of a FAISS index.
-It loads the captions from a CSV file, generates embeddings using a
-Hugging Face SentenceTransformer, and stores/queries them via FAISS.
+Generates embeddings for captions using SentenceTransformers,
+builds a FAISS index, and provides search functionality.
 """
 
 import faiss
 import pandas as pd
-import pickle
 import numpy as np
+import pickle
 from sentence_transformers import SentenceTransformer
 
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-FAISS_INDEX_FILE = "faiss_index.pkl"
+FAISS_INDEX_FILE = "faiss_index.bin"
 CSV_FILE = "captions.csv"
 
-# Initialize the embedding model (this may take a few seconds)
+# Initialize the embedding model once
 model = SentenceTransformer(MODEL_NAME)
 
 def get_embedding(text: str) -> np.ndarray:
     """
-    Generates an embedding for the given text.
-    
-    Args:
-        text (str): Input text.
-        
-    Returns:
-        np.ndarray: Embedding vector.
+    Returns the embedding for the given text.
     """
     return model.encode(text, convert_to_numpy=True)
 
 def create_faiss_index():
     """
-    Loads captions from the CSV file, generates embeddings, and builds a FAISS index.
-    The index and corresponding DataFrame are saved to disk.
+    Loads captions from CSV, generates embeddings, and saves a FAISS index along with metadata.
     """
     df = pd.read_csv(CSV_FILE)
     captions = df["Caption"].tolist()
     embeddings = np.array([get_embedding(c) for c in captions]).astype("float32")
-    
-    # Create a flat L2 index
-    index = faiss.IndexFlatL2(embeddings.shape[1])
+    dimension = embeddings.shape[1]
+    index = faiss.IndexFlatL2(dimension)
     index.add(embeddings)
-    
-    # Save index and DataFrame together
+    # Save both index and DataFrame together for later retrieval.
     with open(FAISS_INDEX_FILE, "wb") as f:
         pickle.dump((index, df), f)
     print("FAISS index created and saved.")
 
-def search_faiss(query: str, top_k: int = 5):
+def search_faiss(query: str, top_k: int = 1):
     """
-    Searches the FAISS index for captions similar to the query.
-    
-    Args:
-        query (str): The search query.
-        top_k (int): Number of top results to return.
-        
-    Returns:
-        pd.DataFrame: A subset of the captions DataFrame with the top matching entries.
+    Searches for the caption most similar to the query.
+    Returns the corresponding row from the DataFrame.
     """
-    try:
-        with open(FAISS_INDEX_FILE, "rb") as f:
-            index, df = pickle.load(f)
-    except Exception as e:
-        print("Error loading FAISS index. Run create_faiss_index() first.")
-        return None
-
+    with open(FAISS_INDEX_FILE, "rb") as f:
+        index, df = pickle.load(f)
     query_embedding = get_embedding(query).astype("float32").reshape(1, -1)
     distances, indices = index.search(query_embedding, top_k)
-    return df.iloc[indices[0]]
-    
+    if indices[0][0] == -1:
+        return None
+    # Return the best matching result along with its distance.
+    row = df.iloc[indices[0][0]]
+    return {"timestamp": row["Timestamp"], "caption": row["Caption"], "distance": distances[0][0]}
+
 if __name__ == "__main__":
-    # Test the indexing and search functionality.
     create_faiss_index()
     q = input("Enter search query: ")
-    results = search_faiss(q)
-    print(results)
+    res = search_faiss(q)
+    print(res)

@@ -4,3 +4,5 @@ streamlit
 faiss-cpu
 sentence-transformers
 pandas
+groq
+crawl4ai
