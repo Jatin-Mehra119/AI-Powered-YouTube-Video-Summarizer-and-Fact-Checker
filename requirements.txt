@@ -1,0 +1,6 @@
+yt-dlp
+requests
+streamlit
+faiss-cpu
+sentence-transformers
+pandas
