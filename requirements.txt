@@ -6,3 +6,4 @@ sentence-transformers
 pandas
 groq
 crawl4ai
+fastapi[standard]
