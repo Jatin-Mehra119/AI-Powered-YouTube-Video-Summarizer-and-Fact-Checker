@@ -55,7 +55,7 @@ AI-Powered YouTube Video Summarizer & Fact-Checker/
 -   **Indexing & Searching Captions:**
     
     -   The CSV of captions is processed to generate sentence embeddings using the SentenceTransformers model.
-    -   A FAISS index is created for fast nearest neighbor search via  [faiss_search.py](https://effective-space-giggle-4jqrg97p74rxfxgw.github.dev/), which is later used to find captions matching a search query.
+    -   A FAISS index is created for fast nearest neighbor search via  [faiss_search.py](src/Database/faiss_search.py), which is later used to find captions matching a search query.
 -   **User Interaction via Streamlit UI:**
     
     -   The UI is built with Streamlit in  [app.py](src/UI/app.py).
