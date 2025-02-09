@@ -171,6 +171,8 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+captions.csv
+cookies.txt
 *.csv
 *.pkl
 *.bin
