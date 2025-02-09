@@ -27,6 +27,16 @@ st.set_page_config(page_title="AI Video Search & Fact-Checker",
                    layout="wide")
 st.title("AI Video Search & Fact-Checker")
 
+# Initialize session state variables if not already set
+if "search_result" not in st.session_state:
+    st.session_state.search_result = None
+if "full_context" not in st.session_state:
+    st.session_state.full_context = None
+if "summary" not in st.session_state:
+    st.session_state.summary = None
+if "fc_results" not in st.session_state:
+    st.session_state.fc_results = None
+
 # -------------------------------
 # Section 1: Fetch Captions & Video Preview
 # -------------------------------
@@ -38,12 +48,10 @@ def extract_video_id(url):
     match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
     return match.group(1) if match else None
 
-if video_url:
-    video_id = extract_video_id(video_url)
-    if video_id:
-        st.video(f"https://www.youtube.com/embed/{video_id}")  # Embed YouTube video
-    else:
-        st.error("Invalid YouTube URL. Please check and try again.")
+video_id = extract_video_id(video_url) if video_url else None
+
+if video_id:
+    st.video(f"https://www.youtube.com/embed/{video_id}")  # Embed YouTube video
 
 if st.button("Fetch Captions") and video_url:
     st.write("Fetching captions...")
@@ -63,13 +71,12 @@ if st.button("Fetch Captions") and video_url:
 # -------------------------------
 st.header("🔍 2. Search Captions")
 search_query = st.text_input("Enter search query:")
-
 context_window = st.number_input("⏳ Context window (seconds)", min_value=5, max_value=60, value=10, step=5)
 
 if st.button("Search") and search_query:
     st.write("Searching...")
     result = faiss_search.search_faiss(search_query)
-    
+
     if result:
         timestamp = result["timestamp"]
         caption = result["caption"]
@@ -83,16 +90,10 @@ if st.button("Search") and search_query:
             target_seconds = 0
 
         # Generate YouTube URL with timestamp
-        if video_id:
-            video_link = f"https://www.youtube.com/watch?v={video_id}&t={target_seconds}s"
-            st.markdown(f"🎯 **Closest Match at [{timestamp}]({video_link})**")
-            st.write(f"📌 `{caption}`")
-            st.markdown(f'<a href="{video_link}" target="_blank"><button>▶️ Play from here</button></a>', unsafe_allow_html=True)
+        video_link = f"https://www.youtube.com/watch?v={video_id}&t={target_seconds}s" if video_id else None
+        st.session_state.search_result = {"timestamp": timestamp, "caption": caption, "video_link": video_link}
 
-        else:
-            st.write(f"**Closest Match at {timestamp}**: {caption}")
-
-        # Load full captions to extract context
+        # Store context in session state
         df = pd.read_csv("captions.csv")
         context_rows = []
         for ts_str, caption in zip(df["Timestamp"], df["Caption"]):
@@ -104,46 +105,51 @@ if st.button("Search") and search_query:
             except Exception:
                 continue
         
-        full_context = " ".join(context_rows)
-        st.subheader("📖 Extracted Context")
-        st.write(full_context)
+        st.session_state.full_context = " ".join(context_rows)
 
-        # Store context in session state
-        st.session_state.full_context = full_context
+# Display Search Results Persistently
+if st.session_state.search_result:
+    st.subheader("🔍 Search Results")
+    result = st.session_state.search_result
+    if result["video_link"]:
+        st.markdown(f"🎯 **Closest Match at [{result['timestamp']}]({result['video_link']})**")
+    st.write(f"📌 `{result['caption']}`")
+
+    st.subheader("📖 Extracted Context")
+    st.write(st.session_state.full_context)
 
 # -------------------------------
 # Section 3: Summarize Video
 # -------------------------------
-st.header("3. Summarize Video")
+st.header("📝 3. Summarize Video")
 
 if st.button("Summarize Video"):
     try:
         st.write("Generating summary... Please wait.")
-        
+
         # Load full captions
         df = pd.read_csv("captions.csv")
         full_transcript = " ".join(df["Caption"].tolist())
 
         # Send the transcript to the summarization function
         fact_checker = FactChecker(groq.Client(api_key=os.getenv("GROQ_API_KEY")))
-        summary = asyncio.run(fact_checker.summarize_text(full_transcript))
-
-        
-        st.subheader("Video Summary")
-        st.write(summary)
+        st.session_state.summary = asyncio.run(fact_checker.summarize_text(full_transcript))
 
     except Exception as e:
         st.error(f"Summarization failed: {str(e)}")
+
+# Display Summary Persistently
+if st.session_state.summary:
+    st.subheader("📌 Video Summary")
+    st.write(st.session_state.summary)
 
 # -------------------------------
 # Section 4: Fact-Check Context
 # -------------------------------
 st.header("✅ 4. Fact-Check Context")
-if "fc_results" not in st.session_state:
-    st.session_state.fc_results = None
 
 if st.button("🔍 Refine & Fact-Check"):
-    if "full_context" not in st.session_state:
+    if not st.session_state.full_context:
         st.error("Please perform a search first.")
     else:
         try:
@@ -157,16 +163,18 @@ if st.button("🔍 Refine & Fact-Check"):
             st.error(f"Fact-checking failed: {str(e)}")
             st.session_state.fc_results = {"error": str(e)}
 
+# Display Fact-Check Results Persistently
 if st.session_state.fc_results:
-    if "error" in st.session_state.fc_results:
-        st.error(st.session_state.fc_results["error"])
+    fc_results = st.session_state.fc_results
+    if "error" in fc_results:
+        st.error(fc_results["error"])
     else:
         st.subheader("📌 Refined Context")
-        refined_context = st.session_state.fc_results.get("refined_context", {})
+        refined_context = fc_results.get("refined_context", {})
         st.write(refined_context.get("context", "No refined context available."))
 
         st.subheader("🧐 Fact-Check Results")
-        verification_result = st.session_state.fc_results.get("verification_result", {})
+        verification_result = fc_results.get("verification_result", {})
         if isinstance(verification_result, str):
             try:
                 verification_result = json.loads(verification_result)
