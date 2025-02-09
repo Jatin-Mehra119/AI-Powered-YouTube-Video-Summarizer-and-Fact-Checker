@@ -113,7 +113,7 @@ python -m streamlit run src/UI/app.py
 ✅ Implement a more robust fact-checking model
 
 
-## Additional Information
+## ⚠️ Important Notes
 
 -   **Cookies:**  
     Ensure that your cookies file located at root of this project folder is up to date for YouTube authentication.
