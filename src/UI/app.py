@@ -22,11 +22,10 @@ from src.Database import faiss_search
 from src.pipelines.fact_checker import FactChecker
 
 # Streamlit UI settings
-st.set_page_config(page_title="AI-Powered Podcast Search & Fact-Checker",
+st.set_page_config(page_title="AI Video Search & Fact-Checker",
                    page_icon=":mag:",
                    layout="wide")
-
-st.title("🎙️ AI-Powered Podcast Search & Fact-Checker")
+st.title("AI Video Search & Fact-Checker")
 
 # -------------------------------
 # Section 1: Fetch Captions & Video Preview
@@ -88,8 +87,8 @@ if st.button("Search") and search_query:
             video_link = f"https://www.youtube.com/watch?v={video_id}&t={target_seconds}s"
             st.markdown(f"🎯 **Closest Match at [{timestamp}]({video_link})**")
             st.write(f"📌 `{caption}`")
-            if st.button("▶️ Play from here"):
-                st.video(video_link)  # Start playing video from timestamp
+            st.markdown(f'<a href="{video_link}" target="_blank"><button>▶️ Play from here</button></a>', unsafe_allow_html=True)
+
         else:
             st.write(f"**Closest Match at {timestamp}**: {caption}")
 
@@ -113,9 +112,33 @@ if st.button("Search") and search_query:
         st.session_state.full_context = full_context
 
 # -------------------------------
-# Section 3: Fact-Check Context
+# Section 3: Summarize Video
 # -------------------------------
-st.header("✅ 3. Fact-Check Context")
+st.header("3. Summarize Video")
+
+if st.button("Summarize Video"):
+    try:
+        st.write("Generating summary... Please wait.")
+        
+        # Load full captions
+        df = pd.read_csv("captions.csv")
+        full_transcript = " ".join(df["Caption"].tolist())
+
+        # Send the transcript to the summarization function
+        fact_checker = FactChecker(groq.Client(api_key=os.getenv("GROQ_API_KEY")))
+        summary = asyncio.run(fact_checker.summarize_text(full_transcript))
+
+        
+        st.subheader("Video Summary")
+        st.write(summary)
+
+    except Exception as e:
+        st.error(f"Summarization failed: {str(e)}")
+
+# -------------------------------
+# Section 4: Fact-Check Context
+# -------------------------------
+st.header("✅ 4. Fact-Check Context")
 if "fc_results" not in st.session_state:
     st.session_state.fc_results = None
 

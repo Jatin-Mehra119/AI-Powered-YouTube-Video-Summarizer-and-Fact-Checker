@@ -185,6 +185,30 @@ class FactChecker:
             "verification_result": verification_result,
             "resources": resources
         }
+    
+    async def summarize_text(self, transcript: str) -> str:
+        """Generate a summary of the given transcript using Groq's LLM."""
+        try:
+            response = await asyncio.to_thread(
+                self.groq_client.chat.completions.create,
+                messages=[{"role": "user", "content": f"""Summarize this transcript: {transcript}
+                    Provide a concise summary of the transcript.
+                    Respond in bullet points.
+                    Word limit: 1000
+                """}],
+                model=self.model_name,
+                temperature=0.3,
+                max_tokens=4000
+            )
+            
+            if not response.choices:
+                return "Error: No summary generated."
+
+            return response.choices[0].message.content
+
+        except Exception as e:
+            return f"Summarization failed: {str(e)}"
+
 
 """
 if __name__ == "__main__":
