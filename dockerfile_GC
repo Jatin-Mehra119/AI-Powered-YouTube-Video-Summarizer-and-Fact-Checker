@@ -49,4 +49,4 @@ RUN mkdir -p /app/.crawl4ai && chmod 777 /app/.crawl4ai
 RUN playwright install  
 
 # Set the default command to run your Streamlit application
-CMD ["python", "-m", "streamlit", "run", "app/main.py", "--server.port=8080", "--server.address=0.0.0.0"]
+CMD ["python", "-m", "streamlit", "run", "app/src/UI/app.py", "--server.port=8080", "--server.address=0.0.0.0"]
