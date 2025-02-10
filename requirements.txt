@@ -8,3 +8,4 @@ groq
 crawl4ai
 fastapi[standard]
 ffmpeg
+feedparser
