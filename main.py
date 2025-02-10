@@ -100,7 +100,7 @@ async def fetch_captions(request: VideoURLRequest):
 
 
 # -------------------------------
-# 🚀 2️⃣ Search Captions API
+# 🚀 2️⃣ Search Captions API + Fact Check of the context
 # -------------------------------
 
 @app.post("/search/")
@@ -126,15 +126,23 @@ async def search_captions(request: SearchRequest):
         # Get context around timestamp
         full_context = get_context_around_timestamp(target_seconds, context_window)
 
+        # ✅ Perform Fact-Checking on full_context (Automatically)
+        try:
+            fact_check_results = await fact_checker.fact_check(full_context)
+        except Exception as fc_error:
+            fact_check_results = {"error": str(fc_error)}
+
         return {
             "message": "Captions searched successfully",
             "timestamp": timestamp,
             "caption": caption,
-            "full_context": full_context
+            "full_context": full_context,
+            "fact_check_results": fact_check_results  # ⬅️ Include fact-checking results in response
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 # -------------------------------
