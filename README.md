@@ -1,4 +1,4 @@
-# AI-Powered YouTube Video Summarizer & Fact-Checker
+# 🎥 AI-Powered YouTube Video Summarizer & Fact-Checker
 
 This Web APP extracts captions from YouTube videos, generates summary, text embeddings, and allows users to search within podcast transcripts. It also refines the context and fact-checks claims using AI models and web crawlers.
 
@@ -27,7 +27,8 @@ AI-Powered YouTube Video Summarizer & Fact-Checker/
 ├── requirements.txt
 ├── captions.csv
 ├── faiss_index.bin # FAISS index file generated for search
-├── PROJECT_STRUCTURE.md
+├── main.py # FastAPI App 
+├── fastapi_APP_info.md # Fastapi docs
 └── src/
 ├── __init__.py
 ├── UI/
@@ -102,7 +103,8 @@ python -m streamlit run src/UI/app.py
 ## 🏗️ **Built With**
 
 -   **Python** 🐍
--   **Streamlit** 🎨 (Frontend UI)
+-   **Streamlit** 🎨
+- **Fastapi** (backend APIs)
 -   **FAISS** ⚡ (Fast Similarity Search)
 -   **Groq API** 🤖 (Fact-checking AI)
 -   **Pandas** 📊 (Data processing)
