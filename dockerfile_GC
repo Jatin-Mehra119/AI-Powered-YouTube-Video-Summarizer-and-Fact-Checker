@@ -39,14 +39,20 @@ RUN crawl4ai-setup
 # Expose the Streamlit port
 EXPOSE 8080  
 
-# Switch to non-root user
-USER appuser  
-
-# Ensure that the crawl4ai cache directory exists and is writable
+# Ensure the crawl4ai cache directory exists and is writable
 RUN mkdir -p /app/.crawl4ai && chmod 777 /app/.crawl4ai  
 
 # Install Playwright browsers as appuser
 RUN playwright install  
 
+# Fix Streamlit port binding issue
+RUN mkdir -p ~/.streamlit && \
+    echo "[server]" > ~/.streamlit/config.toml && \
+    echo "port = 8080" >> ~/.streamlit/config.toml && \
+    echo "enableCORS = false" >> ~/.streamlit/config.toml
+
+# Switch to non-root user
+USER appuser  
+
 # Set the default command to run your Streamlit application
-CMD ["python", "-m", "streamlit", "run", "app/src/UI/app.py", "--server.port=8080", "--server.address=0.0.0.0"]
+ENTRYPOINT ["streamlit", "run", "app/src/UI/app.py", "--server.port=8080", "--server.address=0.0.0.0"]
