@@ -23,7 +23,7 @@ def get_video_id(youtube_url: str) -> str:
 # Get cookies from the browser
 def get_cookies(youtube_url):
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         context = browser.new_context()
         page = context.new_page()  
         page.goto(youtube_url)
