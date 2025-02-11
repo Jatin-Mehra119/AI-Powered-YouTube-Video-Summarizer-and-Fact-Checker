@@ -55,4 +55,4 @@ RUN mkdir -p ~/.streamlit && \
 USER appuser  
 
 # Set the default command to run your Streamlit application
-ENTRYPOINT ["streamlit", "run", "app/src/UI/app.py", "--server.port=8080", "--server.address=0.0.0.0"]
+ENTRYPOINT ["streamlit", "run", "src/UI/app.py", "--server.port=8080", "--server.address=0.0.0.0"]
