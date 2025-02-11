@@ -56,6 +56,8 @@ if video_id:
 if st.button("Fetch Captions") and video_url:
     st.write("Fetching captions...")
     caps_url = CC.fetch_captions(video_url)
+    # fetch cookies
+    CC.get_cookies(video_url)
     if caps_url:
         st.success("Captions fetched! Generating FAISS index...")
         caps_json = load_cc.fetch_captions_json(caps_url)
