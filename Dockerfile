@@ -32,7 +32,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt  
 
 # Install Playwright and its dependencies
-RUN python -m playwright install --with-deps  
+RUN python -m playwright install chromium --with-deps  
 
 # Run crawl4ai-setup before starting the app
 RUN crawl4ai-setup
@@ -53,7 +53,6 @@ RUN mkdir -p /home/appuser/.streamlit && \
 # Set environment variables
 ENV CRAWL4AI_CACHE_DIR="/app/.crawl4ai"  
 ENV PYTHONPATH=/app
-ENV PLAYWRIGHT_BROWSERS_PATH=0
 
 # Expose the Streamlit port
 EXPOSE 8080  
