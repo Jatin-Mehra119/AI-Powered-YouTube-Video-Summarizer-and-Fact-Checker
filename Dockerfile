@@ -32,7 +32,13 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt  
 
 # Install Playwright and its dependencies
-RUN python -m playwright install chromium --with-deps  
+RUN playwright install chromium
+
+# Set Playwright cache path and permissions
+ENV PLAYWRIGHT_BROWSERS_PATH=/home/appuser/.cache/ms-playwright
+RUN mkdir -p /home/appuser/.cache/ms-playwright && \
+    chown -R appuser:appuser /home/appuser/.cache/ms-playwright && \
+    chmod -R 775 /home/appuser/.cache/ms-playwright
 
 # Run crawl4ai-setup before starting the app
 RUN crawl4ai-setup
