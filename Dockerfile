@@ -50,6 +50,12 @@ COPY . /app/
 RUN chown -R appuser:appuser /app && \
     chmod -R 775 /app
 
+# Set Hugging Face cache directory
+ENV HF_HOME=/app/.cache/huggingface
+RUN mkdir -p /app/.cache/huggingface && \
+    chown -R appuser:appuser /app/.cache/huggingface && \
+    chmod -R 775 /app/.cache/huggingface
+
 # Fix Streamlit port binding issue
 RUN mkdir -p /home/appuser/.streamlit && \
     echo "[server]" > /home/appuser/.streamlit/config.toml && \
