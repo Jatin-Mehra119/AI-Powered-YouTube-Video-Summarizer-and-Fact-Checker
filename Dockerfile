@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
     libcups2 \
+    ffmpeg \
     libxkbcommon0 \
     libxcomposite1 \
     libxrandr2 \
@@ -23,22 +24,12 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Create a non-root user and prepare directories with proper ownership
-RUN useradd -m -s /bin/bash appuser && \
-    mkdir -p /app/.crawl4ai && chown -R appuser:appuser /app/.crawl4ai
+# Create a non-root user
+RUN useradd -m -s /bin/bash appuser
 
-# Set environment variables
-ENV CRAWL4AI_CACHE_DIR="/app/.crawl4ai"  
-ENV PYTHONPATH=/app
-ENV PLAYWRIGHT_BROWSERS_PATH=0
-
-# Copy requirements and install Python dependencies
-COPY requirements.txt ./  
+# Copy the requirements and install Python dependencies
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt  
-
-# Copy the entire project and ensure appuser owns all files
-COPY . .  
-RUN chown -R appuser:appuser /app  
 
 # Install Playwright and its dependencies
 RUN python -m playwright install --with-deps  
@@ -46,11 +37,12 @@ RUN python -m playwright install --with-deps
 # Run crawl4ai-setup before starting the app
 RUN crawl4ai-setup
 
-# Expose the Streamlit port
-EXPOSE 8080  
+# Copy the rest of the project files into the container
+COPY . /app/
 
-# Ensure the crawl4ai cache directory exists and is writable
-RUN mkdir -p /app/.crawl4ai && chmod 777 /app/.crawl4ai  
+# Set ownership and permissions for the whole project
+RUN chown -R appuser:appuser /app && \
+    chmod -R 775 /app
 
 # Fix Streamlit port binding issue
 RUN mkdir -p /home/appuser/.streamlit && \
@@ -58,8 +50,16 @@ RUN mkdir -p /home/appuser/.streamlit && \
     echo "port = 8080" >> /home/appuser/.streamlit/config.toml && \
     echo "enableCORS = false" >> /home/appuser/.streamlit/config.toml
 
+# Set environment variables
+ENV CRAWL4AI_CACHE_DIR="/app/.crawl4ai"  
+ENV PYTHONPATH=/app
+ENV PLAYWRIGHT_BROWSERS_PATH=0
+
+# Expose the Streamlit port
+EXPOSE 8080  
+
 # Switch to non-root user
 USER appuser  
 
 # Set the default command to run your Streamlit application
-ENTRYPOINT ["streamlit", "run", "src/UI/app.py", "--server.port=8080", "--server.address=0.0.0.0"]
+ENTRYPOINT ["python", "-m", "streamlit", "run", "src/UI/app.py", "--server.port=8080", "--server.address=0.0.0.0"]
