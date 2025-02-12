@@ -31,6 +31,10 @@ RUN useradd -m -s /bin/bash appuser
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt  
 
+# GROQ API key
+ARG GROQ_API_KEY
+ENV GROQ_API_KEY=${GROQ_API_KEY}  
+
 # Install Playwright and its dependencies
 RUN playwright install chromium
 
