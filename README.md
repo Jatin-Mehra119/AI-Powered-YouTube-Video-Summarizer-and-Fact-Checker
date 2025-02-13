@@ -2,7 +2,7 @@
 
 This Web APP extracts captions from YouTube videos, generates summary, text embeddings, and allows users to search within podcast transcripts. It also refines the context and fact-checks claims using AI models and web crawlers.
 
-### [🚀 DeployedAPP](https://yt-video-fact-checker-and-summarizer-707054101115.asia-south2.run.app/) on Google Cloud.
+### [🚀 DeployedAPP](http://104.154.234.190:8501/) on Google Cloud VM.
 ## 🚀 **Features**
 
 ✅ **Fetch Captions:** Extracts captions from YouTube videos  
