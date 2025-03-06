@@ -6,7 +6,7 @@ sentence-transformers
 pandas
 groq
 crawl4ai
-'fastapi[standard]'
+fastapi[standard]
 ffmpeg
 feedparser
-'uvicorn[standard]'
+uvicorn[standard]
