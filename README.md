@@ -1,9 +1,15 @@
 # 🎥 AI-Powered YouTube Video Summarizer & Fact-Checker
 
 This Web APP extracts captions from YouTube videos, generates summary, text embeddings, and allows users to search within podcast transcripts. It also refines the context and fact-checks claims using AI models and web crawlers.
+##### 🎥Video Demo 
+https://github.com/user-attachments/assets/84737d6e-9361-47cc-b18a-f2f46fd61a50
 
 ### [🚀 DeployedAPP](http://104.154.234.190:8501/) on Google Cloud VM.
 ## 🚀 **Features**
+
+
+
+
 
 ✅ **Fetch Captions:** Extracts captions from YouTube videos  
 ✅ **Search within Captions:** Find specific topics in video transcripts  
